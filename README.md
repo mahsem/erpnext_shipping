@@ -5,6 +5,9 @@ A Shipping Integration for ERPNext with various platforms. Platforms integrated 
 - [LetMeShip](https://www.letmeship.com/en/)
 - [SendCloud](https://www.sendcloud.com/home-new/)
 
+> [!TIP]
+> Please make sure to get your API access enabled first, by contacting the LetMeShip support.
+
 ## Features
 - Creation of shipment to a carrier service (e.g. FedEx, UPS) via LetMeShip and SendCloud. 
 - Compare shipping rates. 

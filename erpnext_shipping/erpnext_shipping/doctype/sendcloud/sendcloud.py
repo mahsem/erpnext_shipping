@@ -14,6 +14,8 @@ from requests.exceptions import HTTPError
 from erpnext_shipping.erpnext_shipping.utils import show_error_alert
 
 SENDCLOUD_PROVIDER = "SendCloud"
+WEIGHT_DECIMALS = 3
+CURRENCY_DECIMALS = 2
 
 
 class SendCloud(Document):
@@ -54,16 +56,10 @@ class SendCloudUtils:
 
 			available_services = []
 			for service in responses_dict.get("shipping_methods", []):
-				countries = [
-					country
-					for country in service["countries"]
-					if country["iso_2"] == to_country
-				]
+				countries = [country for country in service["countries"] if country["iso_2"] == to_country]
 
 				if countries and check_weight(service, parcels):
-					available_service = self.get_service_dict(
-						service, countries[0], parcels
-					)
+					available_service = self.get_service_dict(service, countries[0], parcels)
 					available_services.append(available_service)
 
 			return available_services
@@ -201,8 +197,8 @@ class SendCloudUtils:
 		formatted_parcel = {}
 		formatted_parcel["description"] = description_of_content
 		formatted_parcel["quantity"] = parcel.get("count")
-		formatted_parcel["weight"] = parcel.get("weight")
-		formatted_parcel["value"] = value_of_goods
+		formatted_parcel["weight"] = flt(parcel.get("weight"), WEIGHT_DECIMALS)
+		formatted_parcel["value"] = flt(value_of_goods, CURRENCY_DECIMALS)
 		parcel_list.append(formatted_parcel)
 		return parcel_list
 
@@ -255,7 +251,7 @@ class SendCloudUtils:
 			"shipment": {"id": service_info["service_id"]},
 			"order_number": f"{shipment}-{index}",
 			"external_reference": f"{shipment}-{index}",
-			"weight": parcel.get("weight"),
+			"weight": flt(parcel.get("weight"), WEIGHT_DECIMALS),
 			"parcel_items": self.get_parcel_items(parcel, description_of_content, value_of_goods),
 		}
 
@@ -265,6 +261,5 @@ def check_weight(service: dict, parcels: list[dict]) -> bool:
 	max_weight_kg = float(service["max_weight"])
 	min_weight_kg = float(service["min_weight"])
 	return any(
-		max_weight_kg > parcel.get("weight") and min_weight_kg <= parcel.get("weight")
-		for parcel in parcels
+		max_weight_kg > parcel.get("weight") and min_weight_kg <= parcel.get("weight") for parcel in parcels
 	)
